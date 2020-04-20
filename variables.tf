@@ -84,3 +84,8 @@ variable "web_name" {
   description = "The name and prefix for web server resources."
   default     = "mul-web"
 }
+
+variable "app_name" {
+  description = "The name and prefix for public application resources."
+  default     = "mul-app"
+}

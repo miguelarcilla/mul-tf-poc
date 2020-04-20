@@ -187,6 +187,115 @@ resource "azurerm_linux_virtual_machine" "jumpbox" {
 }
 
 ##############################################################################
+# * Web Server
+resource "azurerm_network_interface" "web_nic" {
+  name                = "${var.web_name}-nic"
+  location            = var.location
+  resource_group_name = azurerm_resource_group.group.name
+
+  ip_configuration {
+    name                          = "${var.web_name}-ipconfig"
+    subnet_id                     = azurerm_subnet.web_subnet.id
+    private_ip_address_allocation = "Dynamic"
+  }
+}
+
+resource "azurerm_linux_virtual_machine" "web" {
+  name                = var.web_name
+  location            = var.location
+  resource_group_name = azurerm_resource_group.group.name
+  size                = "Standard_B1ms"
+  admin_username      = var.admin_username
+
+  admin_ssh_key {
+    username   = var.admin_username
+    public_key = var.ssh_public_key
+  }
+
+  network_interface_ids = [
+    azurerm_network_interface.web_nic.id
+  ]
+
+  source_image_reference {
+    publisher = "Canonical"
+    offer     = "UbuntuServer"
+    sku       = "18.04-LTS"
+    version   = "latest"
+  }
+
+  os_disk {
+    name                  = "${var.web_name}-osdisk"
+    storage_account_type  = "Standard_LRS"
+    caching               = "ReadWrite"
+  }
+}
+
+##############################################################################
+# * Application Gateway
+resource "azurerm_public_ip" "app_ip" {
+  name                = "${var.app_name}-pip"
+  location            = var.location
+  resource_group_name = azurerm_resource_group.group.name
+  allocation_method   = "Dynamic"
+  sku                 = "Basic"
+}
+
+resource "azurerm_application_gateway" "app" {
+  name                = "${var.app_name}gw"
+  location            = var.location
+  resource_group_name = azurerm_resource_group.group.name
+
+  sku {
+    name     = "Standard_Small"
+    tier     = "Standard"
+    capacity = 1
+  }
+
+  gateway_ip_configuration {
+    name      = "${var.app_name}-ipconfig"
+    subnet_id = azurerm_subnet.public_subnet.id
+  }
+
+  frontend_port {
+    name = "${var.app_name}-http-port"
+    port = 80
+  }
+
+  frontend_ip_configuration {
+    name                 = "${var.app_name}-frontend-ipconfig"
+    public_ip_address_id = azurerm_public_ip.app_ip.id
+  }
+
+  backend_address_pool {
+    name = "${var.app_name}-backend-pool"
+  }
+
+  backend_http_settings {
+    name                  = "${var.app_name}-http-settings"
+    cookie_based_affinity = "Disabled"
+    path                  = "/path1/"
+    port                  = 32768
+    protocol              = "Http"
+    request_timeout       = 10
+  }
+
+  http_listener {
+    name                           = "${var.app_name}-http-listener"
+    frontend_ip_configuration_name = "${var.app_name}-frontend-ipconfig"
+    frontend_port_name             = "${var.app_name}-http-port"
+    protocol                       = "Http"
+  }
+
+  request_routing_rule {
+    name                       = "${var.app_name}-http-rule"
+    rule_type                  = "Basic"
+    http_listener_name         = "${var.app_name}-http-listener"
+    backend_address_pool_name  = "${var.app_name}-backend-pool"
+    backend_http_settings_name = "${var.app_name}-http-settings"
+  }
+}
+
+##############################################################################
 # * Azure MySQL Database
 # Terraform can build any type of infrastructure, not just virtual machines. 
 # Azure offers managed MySQL database servers and a whole host of other 

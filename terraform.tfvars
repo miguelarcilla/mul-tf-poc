@@ -1,0 +1,5 @@
+subscription_id = "5f28d089-98a2-44c7-a0ec-32253f71741d"
+location = "westus2"
+ssh_public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC7/hExooiAlyW5LvhtRatQMD6sq20a88BOTlOlLE2/pTFseC+pvMfE87Fjtq0w0lcQjctayQlmEX/gQFeaV8R+yPISek9Fb5s+aoEj8i+XLU1wsapdJj3do8eX6kMKuI7TiliNnOw+rcQGiB5SL1i3cbC03bwSxN5ZQzgvo/dmV0q2EfKccCYOkG3T1qkMX7bMg2Gy235go6YrSXAS2XwroxCBXBHccxVdqg44vysdHXMoTpIb69QDwxo9zW21k2ZuKB8G+6LyygVtnMaaC6hW3Ab5t3UmDXbI1aIV/CrrSgFQyM6YZFDXBMBhkhFUIPzpSnu2JmwOnBA4ZNKp1GP4KnlRjiurIflk1xakkT/b9wj5GoalD2qiY23wLNHRhOJVnYOiEru/FiQ+yosC2o5xD/Z8+Jcb8HAFD+RcxtR9b610+Dy0gS7VA4eqtgIWD0ZXtEIaR3GwtooJf5Rq4o9KBiEnZ2uKDbW+Sw92cg2R04WGIpy6XwYdQ/zhk+dTEns= generated-by-azure"
+#resource_group_name = "mul-ssp"
+#virtual_network_name = "mul-ssp-vnet"

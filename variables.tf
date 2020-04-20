@@ -70,6 +70,11 @@ variable "ssh_public_key" {
   default     = "null"
 }
 
+variable "azure_container_registry_name" {
+  description = "The name for your private Container Registry."
+  default     = "mulacr"
+}
+
 variable "bastion_name" {
   description = "The name and prefix for Azure Bastion resources."
   default     = "mul-bastion"

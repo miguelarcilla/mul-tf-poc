@@ -88,6 +88,14 @@ resource "azurerm_storage_account" "diagnostics" {
     }
 }
 
+resource "azurerm_container_registry" "acr" {
+  name                     = var.azure_container_registry_name
+  location                 = var.location
+  resource_group_name      = azurerm_resource_group.group.name
+  sku                      = "Standard"
+  admin_enabled            = true
+}
+
 ##############################################################################
 # * Azure Bastion
 resource "azurerm_public_ip" "bastion_ip" {
@@ -267,13 +275,15 @@ resource "azurerm_application_gateway" "app" {
   }
 
   backend_address_pool {
-    name = "${var.app_name}-backend-pool"
+    name          = "${var.app_name}-backend-pool"
+    ip_addresses  = [
+      azurerm_linux_virtual_machine.web.private_ip_address
+    ]
   }
 
   backend_http_settings {
     name                  = "${var.app_name}-http-settings"
     cookie_based_affinity = "Disabled"
-    path                  = "/path1/"
     port                  = 32768
     protocol              = "Http"
     request_timeout       = 10

@@ -60,6 +60,11 @@ variable "database_subnet_prefix" {
   default     = "192.168.0.96/28"
 }
 
+variable "diag_storage_prefix" {
+  description = "The storage account prefix for diagnostics collection."
+  default     = "muldiag"
+}
+
 variable "admin_username" {
   description = "Administrator user name."
   default     = "adminuser"
@@ -99,4 +104,3 @@ variable "db_name" {
   description = "The name and prefix for application database resource."
   default     = "mul-db"
 }
-

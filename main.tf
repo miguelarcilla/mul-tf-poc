@@ -77,7 +77,7 @@ resource "random_id" "diagnostics_id" {
 }
 
 resource "azurerm_storage_account" "diagnostics" {
-    name                        = "muldiag${random_id.diagnostics_id.hex}"
+    name                        = "${var.diag_storage_prefix}${random_id.diagnostics_id.hex}"
     resource_group_name         = azurerm_resource_group.group.name
     location                    = var.location
     account_replication_type    = "LRS"

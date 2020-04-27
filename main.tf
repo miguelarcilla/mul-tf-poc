@@ -66,6 +66,7 @@ resource "azurerm_subnet" "database_subnet" {
   virtual_network_name = azurerm_virtual_network.vnet.name
   resource_group_name  = azurerm_resource_group.group.name
   address_prefix       = var.database_subnet_prefix
+  service_endpoints    = ["Microsoft.Sql"]
 }
 
 resource "random_id" "diagnostics_id" {
@@ -336,4 +337,11 @@ resource "azurerm_mysql_database" "db" {
   server_name         = azurerm_mysql_server.mysql.name
   charset             = "utf8"
   collation           = "utf8_unicode_ci"
+}
+
+resource "azurerm_mysql_virtual_network_rule" "mysql_vnet_db_rule" {
+  name                = "${azurerm_virtual_network.vnet.name}-rule-mysql-db"
+  resource_group_name = azurerm_resource_group.group.name
+  server_name         = azurerm_mysql_server.mysql.name
+  subnet_id           = azurerm_subnet.database_subnet.id
 }

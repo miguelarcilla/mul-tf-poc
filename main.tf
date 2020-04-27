@@ -98,25 +98,25 @@ resource "azurerm_container_registry" "acr" {
 
 ##############################################################################
 # * Azure Bastion
-resource "azurerm_public_ip" "bastion_ip" {
-  name                = "${var.bastion_name}-pip"
-  location            = var.location
-  resource_group_name = azurerm_resource_group.group.name
-  allocation_method   = "Static"
-  sku                 = "Standard"
-}
+# resource "azurerm_public_ip" "bastion_ip" {
+#   name                = "${var.bastion_name}-pip"
+#   location            = var.location
+#   resource_group_name = azurerm_resource_group.group.name
+#   allocation_method   = "Static"
+#   sku                 = "Standard"
+# }
 
-resource "azurerm_bastion_host" "bastion" {
-  name                = var.bastion_name
-  location            = var.location
-  resource_group_name = azurerm_resource_group.group.name
+# resource "azurerm_bastion_host" "bastion" {
+#   name                = var.bastion_name
+#   location            = var.location
+#   resource_group_name = azurerm_resource_group.group.name
 
-  ip_configuration {
-    name                 = "configuration"
-    subnet_id            = azurerm_subnet.bastion_subnet.id
-    public_ip_address_id = azurerm_public_ip.bastion_ip.id
-  }
-}
+#   ip_configuration {
+#     name                 = "configuration"
+#     subnet_id            = azurerm_subnet.bastion_subnet.id
+#     public_ip_address_id = azurerm_public_ip.bastion_ip.id
+#   }
+# }
 
 ##############################################################################
 # * Jumpbox
@@ -236,6 +236,10 @@ resource "azurerm_linux_virtual_machine" "web" {
     storage_account_type  = "Standard_LRS"
     caching               = "ReadWrite"
   }
+
+  boot_diagnostics {
+    storage_account_uri = azurerm_storage_account.diagnostics.primary_blob_endpoint
+  }
 }
 
 ##############################################################################
@@ -307,45 +311,29 @@ resource "azurerm_application_gateway" "app" {
 
 ##############################################################################
 # * Azure MySQL Database
-# Terraform can build any type of infrastructure, not just virtual machines. 
-# Azure offers managed MySQL database servers and a whole host of other 
-# resources. Each resource is documented with all the available settings:
-# https://www.terraform.io/docs/providers/azurerm/r/mysql_server.html
-# Uncomment the code below to add a MySQL server to your resource group.
-# resource "azurerm_mysql_server" "mysql" {
-#   name                = "${var.mysql_hostname}"
-#   location            = "${azurerm_resource_group.tf_azure_guide.location}"
-#   resource_group_name = "${azurerm_resource_group.tf_azure_guide.name}"
-#   ssl_enforcement     = "Disabled"
-#   sku {
-#     name     = "MYSQLB50"
-#     capacity = 50
-#     tier     = "Basic"
-#   }
-#   administrator_login          = "mysqladmin"
-#   administrator_login_password = "Everything-is-bananas-010101"
-#   version                      = "5.7"
-#   storage_mb                   = "51200"
-#   ssl_enforcement              = "Disabled"
-# }
-# # This is a sample database that we'll populate with the MySQL sample data
-# # set provided here: https://github.com/datacharmer/test_db. With Terraform,
-# # everything is Infrastructure as Code. No more manual steps, aging runbooks,
-# # tribal knowledge or outdated wiki instructions. Terraform is your executable
-# # documentation, and it will build infrastructure correctly every time.
-# resource "azurerm_mysql_database" "employees" {
-#   name                = "employees"
-#   resource_group_name = "${azurerm_resource_group.tf_azure_guide.name}"
-#   server_name         = "${azurerm_mysql_server.mysql.name}"
-#   charset             = "utf8"
-#   collation           = "utf8_unicode_ci"
-# }
-# # This firewall rule allows database connections from anywhere and is suited
-# # for demo environments. Don't do this in production. 
-# resource "azurerm_mysql_firewall_rule" "demo" {
-#   name                = "tf-guide-demo"
-#   resource_group_name = "${azurerm_resource_group.tf_azure_guide.name}"
-#   server_name         = "${azurerm_mysql_server.mysql.name}"
-#   start_ip_address    = "0.0.0.0"
-#   end_ip_address      = "0.0.0.0"
-# }
+resource "azurerm_mysql_server" "mysql" {
+  name                = "${var.db_name}-svr"
+  location            = var.location
+  resource_group_name = azurerm_resource_group.group.name
+
+  sku_name = "GP_Gen5_2"
+
+  storage_profile {
+    storage_mb            = 5120
+    backup_retention_days = 7
+    geo_redundant_backup  = "Disabled"
+  }
+
+  administrator_login          = var.admin_username
+  administrator_login_password = "Pass@word1!"
+  version                      = "5.7"
+  ssl_enforcement              = "Enabled"
+}
+
+resource "azurerm_mysql_database" "db" {
+  name                = var.db_name
+  resource_group_name = azurerm_resource_group.group.name
+  server_name         = azurerm_mysql_server.mysql.name
+  charset             = "utf8"
+  collation           = "utf8_unicode_ci"
+}

@@ -94,3 +94,9 @@ variable "app_name" {
   description = "The name and prefix for public application resources."
   default     = "mul-app"
 }
+
+variable "db_name" {
+  description = "The name and prefix for application database resource."
+  default     = "mul-db"
+}
+
